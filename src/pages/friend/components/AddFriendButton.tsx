@@ -1,9 +1,9 @@
-import { Button as MuiButton } from "@mui/material";
 import { MdGroupAdd } from "@react-icons/all-files/md/MdGroupAdd";
 import { MdSearch } from "@react-icons/all-files/md/MdSearch";
 import { useRef } from "react";
 import { toast } from "react-toastify";
 import styled, { css } from "styled-components";
+import type { RuleSet } from "styled-components";
 
 import useCharacters from "@core/hooks/queries/character/useCharacters";
 import useModalState from "@core/hooks/useModalState";
@@ -13,7 +13,11 @@ import Modal from "@components/Modal";
 
 import SearchResultModal from "./SearchResultModal";
 
-const FriendAddBtn = () => {
+interface Props {
+  buttonCss?: RuleSet;
+}
+
+const FriendAddBtn = ({ buttonCss }: Props) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [searchUserModal, setSearchUserModal] = useModalState<boolean>();
@@ -41,7 +45,7 @@ const FriendAddBtn = () => {
   return (
     <>
       <Button
-        css={addButtonCss}
+        css={buttonCss}
         variant="outlined"
         startIcon={<MdGroupAdd />}
         onClick={() => setSearchUserModal(true)}
@@ -78,12 +82,6 @@ const FriendAddBtn = () => {
 };
 
 export default FriendAddBtn;
-
-const addButtonCss = css`
-  padding: 8px 16px;
-  background: ${({ theme }) => theme.app.bg.white};
-  border-radius: 10px;
-`;
 
 const searchButtonCss = css`
   border-radius: 10px;

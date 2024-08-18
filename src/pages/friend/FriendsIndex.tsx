@@ -1,10 +1,13 @@
-import { FormControlLabel, Button as MuiButton, Switch } from "@mui/material";
+import { FormControlLabel, Switch } from "@mui/material";
 import { AiOutlineSetting } from "@react-icons/all-files/ai/AiOutlineSetting";
 import { HiUserRemove } from "@react-icons/all-files/hi/HiUserRemove";
+import { MdSave } from "@react-icons/all-files/md/MdSave";
+import { RiArrowLeftRightLine } from "@react-icons/all-files/ri/RiArrowLeftRightLine";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import styled, { useTheme } from "styled-components";
+import styled, { css, useTheme } from "styled-components";
 
 import DefaultLayout from "@layouts/DefaultLayout";
 
@@ -74,6 +77,8 @@ const FriendsIndex = () => {
   const queryClient = useQueryClient();
   const theme = useTheme();
 
+  const [sortMode, setSortMode] = useState(false);
+
   const [modalState, setModalState] = useModalState<number>();
   const getFriends = useFriends();
   const getCharacters = useCharacters();
@@ -117,9 +122,24 @@ const FriendsIndex = () => {
 
   return (
     <DefaultLayout pageTitle="깐부리스트">
-      <Header>
-        <AddFriendButton />
-      </Header>
+      <Buttons>
+        <AddFriendButton buttonCss={buttonCss} />
+
+        <Button
+          css={buttonCss}
+          startIcon={sortMode ? <MdSave /> : <RiArrowLeftRightLine />}
+          variant="outlined"
+          onClick={() => {
+            if (sortMode) {
+              setSortMode(false);
+            }
+
+            setSortMode(true);
+          }}
+        >
+          깐부 순서 {sortMode ? "저장" : "변경"}
+        </Button>
+      </Buttons>
 
       {getFriends.data
         .filter((friend) => friend.areWeFriend !== "깐부")
@@ -317,15 +337,22 @@ const FriendsIndex = () => {
 
 export default FriendsIndex;
 
-const Header = styled.div`
+const Buttons = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   width: 100%;
+  gap: 10px;
 
   ${({ theme }) => theme.medias.max900} {
     justify-content: center;
   }
+`;
+
+const buttonCss = css`
+  padding: 8px 16px;
+  background: ${({ theme }) => theme.app.bg.white};
+  border-radius: 10px;
 `;
 
 const Wrapper = styled.div`
@@ -438,12 +465,6 @@ const Table = styled.table`
   ${({ theme }) => theme.medias.max900} {
     font-size: 14px;
   }
-`;
-
-const ActionButton = styled.button`
-  padding: 10px;
-  color: ${({ theme }) => theme.app.text.main};
-  font-size: 20px;
 `;
 
 const SettingWrapper = styled.ul`
