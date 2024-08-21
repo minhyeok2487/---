@@ -98,14 +98,11 @@ const FriendsIndex = () => {
     ? getFriends.data?.find((friend) => friend.friendId === modalState)
     : undefined;
 
-  if (!getFriends.data) {
+  if (!getFriends.data || !getCharacters.data) {
     return null;
   }
 
-  let characterRaid = null;
-  if (getCharacters.data !== undefined) {
-    characterRaid = calculateFriendRaids(getCharacters.data);
-  }
+  const characterRaid = calculateFriendRaids(getCharacters.data);
 
   return (
     <DefaultLayout pageTitle="깐부리스트">
@@ -199,7 +196,7 @@ const FriendsIndex = () => {
 
             <thead>
               <tr>
-                {TABLE_COLUMNS.map((column, index) => (
+                {TABLE_COLUMNS.map((column) => (
                   <th key={column}>{column}</th>
                 ))}
               </tr>
@@ -212,28 +209,31 @@ const FriendsIndex = () => {
                 </td>
                 <td />
                 <td />
-                {characterRaid?.map((raid, colIndex) => (
-                  <td key={colIndex}>
-                    {raid.totalCount > 0 && (
-                      <dl>
-                        <dt>
-                          <em>{raid.count}</em> / {raid.totalCount}
-                        </dt>
-                        <dd>
-                          딜{raid.dealerCount} 폿{raid.supportCount}
-                        </dd>
-                      </dl>
-                    )}
-                  </td>
-                ))}
+                {characterRaid?.map((raid) => {
+                  return (
+                    <td key={raid.name}>
+                      {raid.totalCount > 0 && (
+                        <dl>
+                          <dt>
+                            <em>{raid.count}</em> / {raid.totalCount}
+                          </dt>
+                          <dd>
+                            딜{raid.dealerCount} 폿{raid.supportCount}
+                          </dd>
+                        </dl>
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
 
               {getFriends.data
                 .filter((friend) => friend.areWeFriend === "깐부")
-                .map((friend, rowIndex) => {
+                .map((friend) => {
                   const raidStatus = calculateFriendRaids(friend.characterList);
+
                   return (
-                    <tr key={rowIndex}>
+                    <tr key={friend.friendId}>
                       <td>
                         <Link to={`/friends/${friend.nickName}`}>
                           {friend.nickName}
@@ -266,7 +266,7 @@ const FriendsIndex = () => {
                         </Button>
                       </td>
                       {raidStatus.map((raid, colIndex) => (
-                        <td key={colIndex}>
+                        <td key={raid.name}>
                           {raid.totalCount > 0 && (
                             <dl>
                               <dt>
