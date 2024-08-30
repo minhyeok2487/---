@@ -129,7 +129,7 @@ const FriendsIndex = () => {
         .filter((friend) => friend.areWeFriend !== "깐부")
         .map((friend) => (
           <Wrapper key={friend.friendId}>
-            <RequestRow>
+            <FriendRequestRow>
               <strong>{friend.nickName}</strong> {friend.areWeFriend}
               {friend.areWeFriend === "깐부 요청 받음" && (
                 <>
@@ -181,52 +181,61 @@ const FriendsIndex = () => {
                   요청 삭제
                 </Button>
               )}
-            </RequestRow>
+            </FriendRequestRow>
           </Wrapper>
         ))}
 
-      <TableWrapper>
-        <TableInnerWrapper>
+      <Wrapper>
+        <TableScrollWrapper>
           <Table>
-            <colgroup>
-              {TABLE_COLUMNS.map((column) => (
-                <col key={column} />
-              ))}
-            </colgroup>
+            <TitleRow>
+              {TABLE_COLUMNS.map((column, index) => {
+                const width = (() => {
+                  switch (index) {
+                    case 0:
+                      return 200;
+                    case 1:
+                    case 2:
+                      return 60;
+                    default:
+                      return 120;
+                  }
+                })();
 
-            <thead>
-              <tr>
-                {TABLE_COLUMNS.map((column) => (
-                  <th key={column}>{column}</th>
-                ))}
-              </tr>
-            </thead>
+                return (
+                  <Cell key={index} $width={width}>
+                    {column}
+                  </Cell>
+                );
+              })}
+            </TitleRow>
+            <FriendRow>
+              <Cell $width={200}>
+                <Link to="/todo">나</Link>
+              </Cell>
+              <Cell $width={60} />
+              <Cell $width={60} />
+              {characterRaid?.map((raid) => {
+                return (
+                  <Cell key={raid.name}>
+                    {raid.totalCount > 0 && (
+                      <dl>
+                        <dt>
+                          <em>{raid.count}</em> / {raid.totalCount}
+                        </dt>
+                        <dd>
+                          딜{raid.dealerCount} 폿{raid.supportCount}
+                        </dd>
+                      </dl>
+                    )}
+                  </Cell>
+                );
+              })}
+            </FriendRow>
+          </Table>
 
+          <Table>
             <tbody>
-              <tr>
-                <td>
-                  <Link to="/todo">나</Link>
-                </td>
-                <td />
-                <td />
-                {characterRaid?.map((raid) => {
-                  return (
-                    <td key={raid.name}>
-                      {raid.totalCount > 0 && (
-                        <dl>
-                          <dt>
-                            <em>{raid.count}</em> / {raid.totalCount}
-                          </dt>
-                          <dd>
-                            딜{raid.dealerCount} 폿{raid.supportCount}
-                          </dd>
-                        </dl>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-
               {getFriends.data
                 .filter((friend) => friend.areWeFriend === "깐부")
                 .map((friend) => {
@@ -284,8 +293,8 @@ const FriendsIndex = () => {
                 })}
             </tbody>
           </Table>
-        </TableInnerWrapper>
-      </TableWrapper>
+        </TableScrollWrapper>
+      </Wrapper>
 
       {modalState && targetState && (
         <Modal
@@ -351,9 +360,7 @@ const Wrapper = styled.div`
   border-radius: 16px;
 `;
 
-const TableWrapper = styled(Wrapper)``;
-
-const RequestRow = styled.div`
+const FriendRequestRow = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -375,82 +382,59 @@ const RequestRow = styled.div`
   }
 `;
 
-const TableInnerWrapper = styled.div`
+const TableScrollWrapper = styled.div`
   width: 100%;
   overflow-x: auto;
 `;
 
-const Table = styled.table`
+const Table = styled.div`
   font-size: 16px;
-  width: 100%;
-
-  colgroup {
-    col {
-      width: 120px;
-
-      &:first-of-type {
-        width: 200px;
-      }
-
-      &:nth-of-type(2),
-      &:nth-of-type(3) {
-        width: 60px;
-      }
-    }
-  }
-
-  thead {
-    tr {
-      height: 40px;
-      background: ${({ theme }) => theme.app.bg.reverse};
-      color: ${({ theme }) => theme.app.text.reverse};
-      border-bottom: 1px solid ${({ theme }) => theme.app.border};
-
-      th {
-        text-align: center;
-        background: ${({ theme }) => theme.app.palette.gray[900]};
-        color: ${({ theme }) => theme.app.palette.gray[0]};
-      }
-    }
-  }
-
-  tbody {
-    color: ${({ theme }) => theme.app.text.main};
-
-    tr {
-      height: 57px;
-      border-bottom: 1px solid ${({ theme }) => theme.app.border};
-
-      td {
-        text-align: center;
-
-        a {
-          border-bottom: 1px solid ${({ theme }) => theme.app.text.main};
-
-          &:hover {
-            font-weight: 600;
-          }
-        }
-
-        dl {
-          dd {
-            font-size: 14px;
-            color: ${({ theme }) => theme.app.text.light2};
-          }
-          dt {
-            color: ${({ theme }) => theme.app.text.light2};
-
-            em {
-              color: ${({ theme }) => theme.app.text.dark2};
-            }
-          }
-        }
-      }
-    }
-  }
 
   ${({ theme }) => theme.medias.max900} {
     font-size: 14px;
+  }
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  background: ${({ theme }) => theme.app.palette.gray[900]};
+  color: ${({ theme }) => theme.app.palette.gray[0]};
+  border-bottom: 1px solid ${({ theme }) => theme.app.border};
+`;
+
+const FriendRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  height: 57px;
+  color: ${({ theme }) => theme.app.text.main};
+  border-bottom: 1px solid ${({ theme }) => theme.app.border};
+`;
+
+const Cell = styled.div<{ $width?: number }>`
+  width: ${({ $width }) => $width || 120}px;
+
+  a {
+    border-bottom: 1px solid ${({ theme }) => theme.app.text.main};
+
+    &:hover {
+      font-weight: 600;
+    }
+  }
+
+  dl {
+    dd {
+      font-size: 14px;
+      color: ${({ theme }) => theme.app.text.light2};
+    }
+    dt {
+      color: ${({ theme }) => theme.app.text.light2};
+
+      em {
+        color: ${({ theme }) => theme.app.text.dark2};
+      }
+    }
   }
 `;
 
