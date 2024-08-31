@@ -27,8 +27,6 @@ import Modal from "@components/Modal";
 
 import AddFriendButton from "./components/AddFriendButton";
 
-const TABLE_COLUMNS = ["닉네임", "권한", "삭제", ...RAID_SORT_ORDER] as const;
-
 const options: { label: string; key: keyof FriendSettings }[] = [
   {
     label: "일일 숙제 출력 권한",
@@ -186,38 +184,48 @@ const FriendsIndex = () => {
         ))}
 
       <Wrapper>
-        <TableScrollWrapper>
-          <Table>
-            <TitleRow>
-              {TABLE_COLUMNS.map((column, index) => {
-                const width = (() => {
-                  switch (index) {
-                    case 0:
-                      return 200;
-                    case 1:
-                    case 2:
-                      return 60;
-                    default:
-                      return 120;
-                  }
-                })();
-
+        <Table>
+          <NicknameColumn>
+            <Row>
+              <Th $width={200}>닉네임</Th>
+            </Row>
+            <Row>
+              <Td $width={200}>
+                <Link to="/todo">나</Link>
+              </Td>
+            </Row>
+            {getFriends.data
+              .filter((friend) => friend.areWeFriend === "깐부")
+              .map((friend) => {
                 return (
-                  <Cell key={index} $width={width}>
-                    {column}
-                  </Cell>
+                  <Row key={friend.friendId}>
+                    <Td $width={200}>
+                      <Link to={`/friends/${friend.nickName}`}>
+                        {friend.nickName}
+                      </Link>
+                    </Td>
+                  </Row>
                 );
               })}
-            </TitleRow>
-            <FriendRow>
-              <Cell $width={200}>
-                <Link to="/todo">나</Link>
-              </Cell>
-              <Cell $width={60} />
-              <Cell $width={60} />
+          </NicknameColumn>
+          <RestColumns>
+            <Row>
+              <Th $width={60}>권한</Th>
+              <Th $width={60}>삭제</Th>
+              {RAID_SORT_ORDER.map((column, index) => {
+                return (
+                  <Th $width={120} key={index}>
+                    {column}
+                  </Th>
+                );
+              })}
+            </Row>
+            <Row>
+              <Td $width={60} />
+              <Td $width={60} />
               {characterRaid?.map((raid) => {
                 return (
-                  <Cell key={raid.name}>
+                  <Td key={raid.name} $width={120}>
                     {raid.totalCount > 0 && (
                       <dl>
                         <dt>
@@ -228,72 +236,60 @@ const FriendsIndex = () => {
                         </dd>
                       </dl>
                     )}
-                  </Cell>
+                  </Td>
                 );
               })}
-            </FriendRow>
-          </Table>
+            </Row>
+            {getFriends.data
+              .filter((friend) => friend.areWeFriend === "깐부")
+              .map((friend) => {
+                const raidStatus = calculateFriendRaids(friend.characterList);
 
-          <Table>
-            <tbody>
-              {getFriends.data
-                .filter((friend) => friend.areWeFriend === "깐부")
-                .map((friend) => {
-                  const raidStatus = calculateFriendRaids(friend.characterList);
-
-                  return (
-                    <tr key={friend.friendId}>
-                      <td>
-                        <Link to={`/friends/${friend.nickName}`}>
-                          {friend.nickName}
-                        </Link>
-                      </td>
-                      <td>
-                        <Button
-                          variant="icon"
-                          onClick={() => setModalState(friend.friendId)}
-                        >
-                          <AiOutlineSetting size={20} />
-                          <span className="text-hidden">깐부 설정</span>
-                        </Button>
-                      </td>
-                      <td>
-                        <Button
-                          variant="icon"
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                `${friend.nickName}님과 깐부를 해제하시겠어요?`
-                              )
-                            ) {
-                              removeFriend.mutate(friend.friendId);
-                            }
-                          }}
-                        >
-                          <HiUserRemove size={20} />
-                          <span className="text-hidden">깐부 삭제</span>
-                        </Button>
-                      </td>
-                      {raidStatus.map((raid, colIndex) => (
-                        <td key={raid.name}>
-                          {raid.totalCount > 0 && (
-                            <dl>
-                              <dt>
-                                <em>{raid.count}</em> / {raid.totalCount}
-                              </dt>
-                              <dd>
-                                딜{raid.dealerCount} 폿{raid.supportCount}
-                              </dd>
-                            </dl>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </Table>
-        </TableScrollWrapper>
+                return (
+                  <Row key={friend.friendId}>
+                    <Td $width={60}>
+                      <Button
+                        variant="icon"
+                        onClick={() => setModalState(friend.friendId)}
+                      >
+                        <AiOutlineSetting size={20} />
+                      </Button>
+                    </Td>
+                    <Td $width={60}>
+                      <Button
+                        variant="icon"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `${friend.nickName}님과 깐부를 해제하시겠어요?`
+                            )
+                          ) {
+                            removeFriend.mutate(friend.friendId);
+                          }
+                        }}
+                      >
+                        <HiUserRemove size={20} />
+                      </Button>
+                    </Td>
+                    {raidStatus.map((raid, colIndex) => (
+                      <Td key={raid.name} $width={120}>
+                        {raid.totalCount > 0 && (
+                          <dl>
+                            <dt>
+                              <em>{raid.count}</em> / {raid.totalCount}
+                            </dt>
+                            <dd>
+                              딜{raid.dealerCount} 폿{raid.supportCount}
+                            </dd>
+                          </dl>
+                        )}
+                      </Td>
+                    ))}
+                  </Row>
+                );
+              })}
+          </RestColumns>
+        </Table>
       </Wrapper>
 
       {modalState && targetState && (
@@ -382,12 +378,46 @@ const FriendRequestRow = styled.div`
   }
 `;
 
-const TableScrollWrapper = styled.div`
-  width: 100%;
+const Table = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+`;
+
+const NicknameColumn = styled.div`
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+`;
+
+const RestColumns = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-left: 200px;
   overflow-x: auto;
 `;
 
-const Table = styled.div`
+const Row = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+`;
+
+const Th = styled.div<{ $width?: number }>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: ${({ $width }) => $width}px;
+  height: 40px;
+  color: ${({ theme }) => theme.app.palette.gray[0]};
+  background: ${({ theme }) => theme.app.palette.gray[900]};
+  border-bottom: 1px solid ${({ theme }) => theme.app.border};
   font-size: 16px;
 
   ${({ theme }) => theme.medias.max900} {
@@ -395,25 +425,11 @@ const Table = styled.div`
   }
 `;
 
-const TitleRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  height: 40px;
-  background: ${({ theme }) => theme.app.palette.gray[900]};
-  color: ${({ theme }) => theme.app.palette.gray[0]};
-  border-bottom: 1px solid ${({ theme }) => theme.app.border};
-`;
-
-const FriendRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  height: 57px;
+const Td = styled(Th)`
   color: ${({ theme }) => theme.app.text.main};
+  height: 57px;
+  background: ${({ theme }) => theme.app.bg.white};
   border-bottom: 1px solid ${({ theme }) => theme.app.border};
-`;
-
-const Cell = styled.div<{ $width?: number }>`
-  width: ${({ $width }) => $width || 120}px;
 
   a {
     border-bottom: 1px solid ${({ theme }) => theme.app.text.main};
@@ -424,6 +440,10 @@ const Cell = styled.div<{ $width?: number }>`
   }
 
   dl {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+
     dd {
       font-size: 14px;
       color: ${({ theme }) => theme.app.text.light2};
