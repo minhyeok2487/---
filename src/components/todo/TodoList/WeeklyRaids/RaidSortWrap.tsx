@@ -61,8 +61,8 @@ const RaidSortWrap: FC<Props> = ({ setTodos, todoList, character, friend }) => {
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
-      onDragStart={(e) => handleDragStart(e)}
-      onDragEnd={(e) => handleDragEnd(e)}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <SortableContext
         items={todoList.map((todo) => todo.id)}

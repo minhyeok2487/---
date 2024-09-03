@@ -1,10 +1,27 @@
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 import { FormControlLabel, Switch } from "@mui/material";
+import { AiOutlineDrag } from "@react-icons/all-files/ai/AiOutlineDrag";
 import { AiOutlineSetting } from "@react-icons/all-files/ai/AiOutlineSetting";
 import { HiUserRemove } from "@react-icons/all-files/hi/HiUserRemove";
 import { MdSave } from "@react-icons/all-files/md/MdSave";
 import { RiArrowLeftRightLine } from "@react-icons/all-files/ri/RiArrowLeftRightLine";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import styled, { css, useTheme } from "styled-components";
@@ -18,7 +35,7 @@ import useUpdateFriendSetting from "@core/hooks/mutations/friend/useUpdateFriend
 import useCharacters from "@core/hooks/queries/character/useCharacters";
 import useFriends from "@core/hooks/queries/friend/useFriends";
 import useModalState from "@core/hooks/useModalState";
-import type { FriendSettings } from "@core/types/friend";
+import type { Friend, FriendSettings } from "@core/types/friend";
 import queryKeyGenerator from "@core/utils/queryKeyGenerator";
 import { calculateFriendRaids } from "@core/utils/todo.util";
 
@@ -62,8 +79,6 @@ const FriendsIndex = () => {
   const queryClient = useQueryClient();
   const theme = useTheme();
 
-  const [sortMode, setSortMode] = useState(false);
-
   const [modalState, setModalState] = useModalState<number>();
   const getFriends = useFriends();
   const getCharacters = useCharacters();
@@ -92,6 +107,40 @@ const FriendsIndex = () => {
     },
   });
 
+  const [sortMode, setSortMode] = useState(false);
+  const [activeId, setActiveId] = useState<number | null>();
+  const [sortedFreinds, setSortedFriends] = useState<Friend[]>([]);
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+
+    setActiveId(active.id as number);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    const overId = over?.id;
+
+    if (!overId) return;
+
+    if (active.id !== over.id) {
+      const oldIndex = sortedFreinds.findIndex(
+        (el) => el.friendId === active.id
+      );
+      const newIndex = sortedFreinds.findIndex((el) => el.friendId === over.id);
+
+      const updatedTodoList = arrayMove(sortedFreinds, oldIndex, newIndex);
+      setSortedFriends(updatedTodoList);
+    }
+
+    setActiveId(undefined);
+  };
+
+  useEffect(() => {
+    setSortedFriends([...(getFriends.data || [])]);
+  }, [sortMode]);
+
   const targetState = modalState
     ? getFriends.data?.find((friend) => friend.friendId === modalState)
     : undefined;
@@ -112,11 +161,7 @@ const FriendsIndex = () => {
           startIcon={sortMode ? <MdSave /> : <RiArrowLeftRightLine />}
           variant="outlined"
           onClick={() => {
-            if (sortMode) {
-              setSortMode(false);
-            }
-
-            setSortMode(true);
+            setSortMode(!sortMode);
           }}
         >
           깐부 순서 {sortMode ? "저장" : "변경"}
@@ -185,110 +230,128 @@ const FriendsIndex = () => {
 
       <Wrapper>
         <Table>
-          <NicknameColumn>
+          <NicknameColumn $sortMode={sortMode}>
             <Row>
+              {sortMode && <Th $width={50} />}
               <Th $width={200}>닉네임</Th>
             </Row>
             <Row>
+              {sortMode && <Td $width={50} />}
               <Td $width={200}>
                 <Link to="/todo">나</Link>
               </Td>
             </Row>
-            {getFriends.data
-              .filter((friend) => friend.areWeFriend === "깐부")
-              .map((friend) => {
-                return (
-                  <Row key={friend.friendId}>
-                    <Td $width={200}>
-                      <Link to={`/friends/${friend.nickName}`}>
-                        {friend.nickName}
-                      </Link>
-                    </Td>
-                  </Row>
-                );
-              })}
-          </NicknameColumn>
-          <RestColumns>
-            <Row>
-              <Th $width={60}>권한</Th>
-              <Th $width={60}>삭제</Th>
-              {RAID_SORT_ORDER.map((column, index) => {
-                return (
-                  <Th $width={120} key={index}>
-                    {column}
-                  </Th>
-                );
-              })}
-            </Row>
-            <Row>
-              <Td $width={60} />
-              <Td $width={60} />
-              {characterRaid?.map((raid) => {
-                return (
-                  <Td key={raid.name} $width={120}>
-                    {raid.totalCount > 0 && (
-                      <dl>
-                        <dt>
-                          <em>{raid.count}</em> / {raid.totalCount}
-                        </dt>
-                        <dd>
-                          딜{raid.dealerCount} 폿{raid.supportCount}
-                        </dd>
-                      </dl>
-                    )}
-                  </Td>
-                );
-              })}
-            </Row>
-            {getFriends.data
-              .filter((friend) => friend.areWeFriend === "깐부")
-              .map((friend) => {
-                const raidStatus = calculateFriendRaids(friend.characterList);
-
-                return (
-                  <Row key={friend.friendId}>
-                    <Td $width={60}>
-                      <Button
-                        variant="icon"
-                        onClick={() => setModalState(friend.friendId)}
-                      >
-                        <AiOutlineSetting size={20} />
-                      </Button>
-                    </Td>
-                    <Td $width={60}>
-                      <Button
-                        variant="icon"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `${friend.nickName}님과 깐부를 해제하시겠어요?`
-                            )
-                          ) {
-                            removeFriend.mutate(friend.friendId);
-                          }
-                        }}
-                      >
-                        <HiUserRemove size={20} />
-                      </Button>
-                    </Td>
-                    {raidStatus.map((raid, colIndex) => (
-                      <Td key={raid.name} $width={120}>
-                        {raid.totalCount > 0 && (
-                          <dl>
-                            <dt>
-                              <em>{raid.count}</em> / {raid.totalCount}
-                            </dt>
-                            <dd>
-                              딜{raid.dealerCount} 폿{raid.supportCount}
-                            </dd>
-                          </dl>
-                        )}
+            {sortMode ? (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              ></DndContext>
+            ) : (
+              getFriends.data
+                .filter((friend) => friend.areWeFriend === "깐부")
+                .map((friend) => {
+                  return (
+                    <Row key={friend.friendId}>
+                      {sortMode && (
+                        <Td $width={50}>
+                          <AiOutlineDrag size={20} />
+                        </Td>
+                      )}
+                      <Td $width={200}>
+                        <Link to={`/friends/${friend.nickName}`}>
+                          {friend.nickName}
+                        </Link>
                       </Td>
-                    ))}
-                  </Row>
-                );
-              })}
-          </RestColumns>
+                    </Row>
+                  );
+                })
+            )}
+          </NicknameColumn>
+          {!sortMode && (
+            <RestColumns>
+              <Row>
+                <Th $width={60}>권한</Th>
+                <Th $width={60}>삭제</Th>
+                {RAID_SORT_ORDER.map((column, index) => {
+                  return (
+                    <Th $width={120} key={index}>
+                      {column}
+                    </Th>
+                  );
+                })}
+              </Row>
+              <Row>
+                <Td $width={60} />
+                <Td $width={60} />
+                {characterRaid?.map((raid) => {
+                  return (
+                    <Td key={raid.name} $width={120}>
+                      {raid.totalCount > 0 && (
+                        <dl>
+                          <dt>
+                            <em>{raid.count}</em> / {raid.totalCount}
+                          </dt>
+                          <dd>
+                            딜{raid.dealerCount} 폿{raid.supportCount}
+                          </dd>
+                        </dl>
+                      )}
+                    </Td>
+                  );
+                })}
+              </Row>
+              {getFriends.data
+                .filter((friend) => friend.areWeFriend === "깐부")
+                .map((friend) => {
+                  const raidStatus = calculateFriendRaids(friend.characterList);
+
+                  return (
+                    <Row key={friend.friendId}>
+                      <Td $width={60}>
+                        <Button
+                          variant="icon"
+                          onClick={() => setModalState(friend.friendId)}
+                        >
+                          <AiOutlineSetting size={20} />
+                        </Button>
+                      </Td>
+                      <Td $width={60}>
+                        <Button
+                          variant="icon"
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                `${friend.nickName}님과 깐부를 해제하시겠어요?`
+                              )
+                            ) {
+                              removeFriend.mutate(friend.friendId);
+                            }
+                          }}
+                        >
+                          <HiUserRemove size={20} />
+                        </Button>
+                      </Td>
+                      {raidStatus.map((raid, colIndex) => (
+                        <Td key={raid.name} $width={120}>
+                          {raid.totalCount > 0 && (
+                            <dl>
+                              <dt>
+                                <em>{raid.count}</em> / {raid.totalCount}
+                              </dt>
+                              <dd>
+                                딜{raid.dealerCount} 폿{raid.supportCount}
+                              </dd>
+                            </dl>
+                          )}
+                        </Td>
+                      ))}
+                    </Row>
+                  );
+                })}
+            </RestColumns>
+          )}
         </Table>
       </Wrapper>
 
@@ -385,11 +448,16 @@ const Table = styled.div`
   justify-content: flex-start;
 `;
 
-const NicknameColumn = styled.div`
-  z-index: 1;
-  position: absolute;
-  top: 0;
-  left: 0;
+const NicknameColumn = styled.div<{ $sortMode?: boolean }>`
+  ${({ $sortMode }) =>
+    !$sortMode &&
+    css`
+      z-index: 1;
+      position: absolute;
+      top: 0;
+      left: 0;
+    `}
+
   display: flex;
   flex-direction: column;
 `;
