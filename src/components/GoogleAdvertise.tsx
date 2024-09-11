@@ -21,7 +21,7 @@ const GoogleAdvertise: FC<Props> = ({ client, slot, format, responsive }) => {
   }, []);
 
   // production이 아닌 경우 대체 컴포넌트 표시
-  if (process.env.NODE_ENV !== "production")
+  /* if (process.env.NODE_ENV !== "production")
     return (
       <div
         style={{
@@ -31,12 +31,12 @@ const GoogleAdvertise: FC<Props> = ({ client, slot, format, responsive }) => {
           fontWeight: "bold",
           textAlign: "center",
           padding: "16px",
-          ...(format === "horizontal" && { maxHeight: "120px" }),
+          ...(format === "vertical" && { maxHeight: "120px" }),
         }}
       >
         광고 표시 영역
       </div>
-    );
+    ); */
 
   // production인 경우 구글 광고 표시
   return (

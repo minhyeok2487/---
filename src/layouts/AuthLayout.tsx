@@ -5,6 +5,7 @@ import styled from "styled-components";
 
 import GoogleAdvertise from "@components/GoogleAdvertise";
 
+import ContentWrapper from "./common/ContentWrapper";
 import Header from "./common/Header";
 import Wrapper from "./common/Wrapper";
 
@@ -18,21 +19,23 @@ const AuthLayout: FC<Props> = ({ children }) => {
       <Header />
 
       <Wrapper>
-        <AdWrapper>
-          <GoogleAdvertise
-            client="ca-pub-9665234618246720"
-            slot="2191443590"
-            format="horizontal"
-            responsive="false"
-          />
-        </AdWrapper>
-        {/* <EmergencyNotice /> */}
+        <ContentWrapper>
+          <AdWrapper>
+            <GoogleAdvertise
+              client="ca-pub-9665234618246720"
+              slot="2191443590"
+              format="horizontal"
+              responsive="false"
+            />
+          </AdWrapper>
+          {/* <EmergencyNotice /> */}
 
-        {children}
+          {children}
+        </ContentWrapper>
+
+        <SpeedInsights />
+        <Analytics />
       </Wrapper>
-
-      <SpeedInsights />
-      <Analytics />
     </>
   );
 };

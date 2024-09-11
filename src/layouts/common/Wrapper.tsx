@@ -13,14 +13,14 @@ export default Wrapper;
 
 const StyledWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
   margin: 60px auto 0;
   padding: 20px 0;
   width: 100%;
-  max-width: 1280px;
+  max-width: 1920px;
   height: 100%;
-  color: ${({ theme }) => theme.app.text.dark1};
 
   ${({ theme }) => theme.medias.max1280} {
     padding: 20px 16px;
