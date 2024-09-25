@@ -1,40 +1,27 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import styled, { useTheme } from "styled-components";
 
 import DefaultLayout from "@layouts/DefaultLayout";
 
-import useResetCharacters from "@core/hooks/mutations/member/useResetCharacters";
 import useCharacters from "@core/hooks/queries/character/useCharacters";
 import useMyInformation from "@core/hooks/queries/member/useMyInformation";
 import useModalState from "@core/hooks/useModalState";
-import queryKeyGenerator from "@core/utils/queryKeyGenerator";
 
 import Button from "@components/Button";
 import Modal from "@components/Modal";
 import Select from "@components/form/Select";
 
 import ApiKeyUpdateForm from "./ApiKeyUpdateFormV2";
+import ResetCharactersButton from "./ResetCharactersButton"; // Import the new component
 
 const MyPageIndex = () => {
   const [resetModal, toggleResetModal] = useModalState<boolean>();
   const getMyInformation = useMyInformation();
   const getCharacters = useCharacters();
   const theme = useTheme();
-  const queryClient = useQueryClient();
 
-  const resetCharacters = useResetCharacters({
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeyGenerator.getMyInformation(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeyGenerator.getCharacters(),
-      });
+  const handleDeleteMember = () => {
 
-      toast.success("등록된 캐릭터가 정상적으로 삭제되었습니다.");
-    },
-  });
+  }
 
   return (
     <DefaultLayout>
@@ -116,11 +103,7 @@ const MyPageIndex = () => {
 
         <div className="formList">
           <p className="label">계정 초기화</p>
-          <div className="formArea left">
-            <Button variant="outlined" onClick={() => toggleResetModal(true)}>
-              등록된 캐릭터 전체삭제
-            </Button>
-          </div>
+          <ResetCharactersButton />
         </div>
 
         <div className="formList">
@@ -128,7 +111,7 @@ const MyPageIndex = () => {
             <Button
               variant="outlined"
               color={theme.app.palette.red[650]}
-              onClick={() => {}}
+              onClick={() => toggleResetModal(true)}
             >
               회원탈퇴
             </Button>
@@ -136,13 +119,13 @@ const MyPageIndex = () => {
         </div>
       </Wrapper>
       <Modal
-        title="등록 캐릭터 삭제"
+        title="회원 탈퇴"
         isOpen={!!resetModal}
         onClose={toggleResetModal}
         buttons={[
           {
             label: "확인",
-            onClick: resetCharacters.mutate,
+            onClick: handleDeleteMember,
           },
           {
             label: "취소",
@@ -150,11 +133,9 @@ const MyPageIndex = () => {
           },
         ]}
       >
-        정말로 등록된 캐릭터를 삭제하시겠습니까?
+        정말로 회원탈퇴를 진행하시겠습니까?
         <br />
-        등록된 캐릭터, 숙제, 깐부 데이터가 삭제됩니다.
-        <br />
-        코멘트 데이터는 유지됩니다.
+        등록된 모든 데이터가 삭제됩니다.
       </Modal>
     </DefaultLayout>
   );
