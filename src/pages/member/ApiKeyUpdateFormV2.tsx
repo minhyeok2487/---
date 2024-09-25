@@ -80,11 +80,11 @@ const ApiKeyUpdateForm = () => {
           }}
           message={apiKeyMessage}
         />
-        <div style={{ marginLeft: 10 }}>
+        <ButtonWrap>
           <Button variant="contained" size="large" onClick={handleSubmit}>
             API KEY 업데이트
           </Button>
-        </div>
+        </ButtonWrap>
       </Wrap>
       <Wrap>
         <UtilRow>
@@ -117,6 +117,20 @@ const Wrap = styled.form`
   display: flex;
   flex-direction: row;
   align-items: center;
+  @media (max-width: 900px) {
+    flex-direction: column;
+    width:100%;
+  }
+`;
+
+const ButtonWrap = styled.form`
+  margin-left:10px;
+  @media (max-width: 900px) {
+    flex-direction: column;
+    margin-top:10px;
+    margin-left:0px;
+    width:100%;
+  }
 `;
 
 const UtilRow = styled.div`
