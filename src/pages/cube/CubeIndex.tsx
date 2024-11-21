@@ -21,13 +21,8 @@ import CubeDashboardModal from "@components/CubeDashboardModal";
 import CardExpIcon from "@assets/images/ico_card_exp.png";
 import GoldIcon from "@assets/images/ico_gold.png";
 import SilverIcon from "@assets/images/ico_silver.png";
-import T3Aux1Icon from "@assets/images/ico_t3_aux1.png";
-import T3Aux2Icon from "@assets/images/ico_t3_aux2.png";
-import T3Aux3Icon from "@assets/images/ico_t3_aux3.png";
 import T3JewelIcon from "@assets/images/ico_t3_jewel.png";
-import T3LeapStoneIcon from "@assets/images/ico_t3_leap_stone.png";
 import T4JewelIcon from "@assets/images/ico_t4_jewel.png";
-import T4LeapStoneIcon from "@assets/images/ico_t4_leap_stone.png";
 
 const CubeIndex = () => {
   const queryClient = useQueryClient();
@@ -90,6 +85,12 @@ const CubeIndex = () => {
       t4: getJewerlyResult(totalItems.t4Jewel),
     };
   }, [totalItems]);
+  const visibleT3Jewel = Object.values(totalJewerly.t3).some(
+    (value) => value > 0
+  );
+  const visibleT4Jewel = Object.values(totalJewerly.t4).some(
+    (value) => value > 0
+  );
 
   const existingCharacterIds = (getCubeCharacters.data || []).map(
     (cube) => cube.characterId
@@ -107,45 +108,74 @@ const CubeIndex = () => {
       <Wrapper>
         <TotalRow>
           <TotalCard $flex={1}>
-            <dt>보석 골드 총합</dt>
-            <dd>
-              <WithIcon $icon={GoldIcon}>
-                {totalItems.gold.toLocaleString()}
-              </WithIcon>
-            </dd>
+            <dt>보석 결과</dt>
+            {visibleT3Jewel || visibleT4Jewel ? (
+              <dd>
+                <ul>
+                  <li>
+                    <WithIcon $icon={GoldIcon}>
+                      {totalItems.gold.toLocaleString()}
+                    </WithIcon>
+                  </li>
+                  {visibleT3Jewel && (
+                    <li>
+                      <WithJewerly $icon={T3JewelIcon}>
+                        {Object.keys(totalJewerly.t3).map((key) => {
+                          const number =
+                            totalJewerly.t3[
+                              key as unknown as keyof (typeof totalJewerly)["t3"]
+                            ];
+
+                          if (number > 0) {
+                            return (
+                              <dl key={key}>
+                                <dt>{key}레벨</dt> <dd>{number}개</dd>
+                              </dl>
+                            );
+                          }
+
+                          return null;
+                        })}
+                      </WithJewerly>
+                    </li>
+                  )}
+
+                  {visibleT4Jewel && (
+                    <li>
+                      <WithJewerly $icon={T4JewelIcon}>
+                        {Object.keys(totalJewerly.t4).map((key) => {
+                          const number =
+                            totalJewerly.t4[
+                              key as unknown as keyof (typeof totalJewerly)["t4"]
+                            ];
+
+                          if (number > 0) {
+                            return (
+                              <dl key={key}>
+                                <dt>{key}레벨</dt> <dd>{number}개</dd>
+                              </dl>
+                            );
+                          }
+
+                          return null;
+                        })}
+                      </WithJewerly>
+                    </li>
+                  )}
+                </ul>
+              </dd>
+            ) : (
+              <dd>-</dd>
+            )}
           </TotalCard>
-          <TotalCard $flex={3}>
+
+          <TotalCard>
             <dt>재화 총합</dt>
             <dd>
               <ul>
                 <li>
-                  <WithIcon $icon={T3LeapStoneIcon}>
-                    {totalItems.t3LeapStone.toLocaleString()}
-                  </WithIcon>
-                </li>
-                <li>
-                  <WithIcon $icon={T4LeapStoneIcon}>
-                    {totalItems.t4LeapStone.toLocaleString()}
-                  </WithIcon>
-                </li>
-                <li>
                   <WithIcon $icon={SilverIcon}>
                     {totalItems.silver.toLocaleString()}
-                  </WithIcon>
-                </li>
-                <li>
-                  <WithIcon $icon={T3Aux1Icon}>
-                    {totalItems.t3Aux1.toLocaleString()}
-                  </WithIcon>
-                </li>
-                <li>
-                  <WithIcon $icon={T3Aux2Icon}>
-                    {totalItems.t3Aux2.toLocaleString()}
-                  </WithIcon>
-                </li>
-                <li>
-                  <WithIcon $icon={T3Aux3Icon}>
-                    {totalItems.t3Aux3.toLocaleString()}
                   </WithIcon>
                 </li>
                 <li>
@@ -157,54 +187,6 @@ const CubeIndex = () => {
             </dd>
           </TotalCard>
         </TotalRow>
-
-        <TotalCard $flex={3}>
-          <dt>보석 결과</dt>
-          <dd>
-            <ul>
-              <li>
-                <WithJewerly $icon={T3JewelIcon}>
-                  {Object.keys(totalJewerly.t3).map((key) => {
-                    const number =
-                      totalJewerly.t3[
-                        key as unknown as keyof (typeof totalJewerly)["t3"]
-                      ];
-
-                    if (number > 0) {
-                      return (
-                        <dl key={key}>
-                          <dt>{key}레벨</dt> <dd>{number}개</dd>
-                        </dl>
-                      );
-                    }
-
-                    return null;
-                  })}
-                </WithJewerly>
-              </li>
-              <li>
-                <WithJewerly $icon={T4JewelIcon}>
-                  {Object.keys(totalJewerly.t4).map((key) => {
-                    const number =
-                      totalJewerly.t4[
-                        key as unknown as keyof (typeof totalJewerly)["t4"]
-                      ];
-
-                    if (number > 0) {
-                      return (
-                        <dl key={key}>
-                          <dt>{key}레벨</dt> <dd>{number}개</dd>
-                        </dl>
-                      );
-                    }
-
-                    return null;
-                  })}
-                </WithJewerly>
-              </li>
-            </ul>
-          </dd>
-        </TotalCard>
 
         <Buttons>
           <Button
@@ -281,8 +263,8 @@ const TotalRow = styled.div`
   }
 `;
 
-const TotalCard = styled.dl<{ $flex: number }>`
-  flex: ${({ $flex }) => $flex};
+const TotalCard = styled.dl<{ $flex?: number }>`
+  flex: ${({ $flex }) => $flex || "unset"};
   display: flex;
   justify-content: space-between;
   align-items: center;
