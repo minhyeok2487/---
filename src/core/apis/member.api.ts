@@ -1,4 +1,4 @@
-import type { NoDataResponse } from "@core/types/api";
+import { NoDataResponse } from "@core/types/api";
 import type {
   Member,
   UpdateApiKeyRequest,

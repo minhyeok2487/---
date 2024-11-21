@@ -1,4 +1,5 @@
 import { Button as MuiButton } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import styled from "styled-components";
@@ -14,6 +15,7 @@ import { updateCharacterQueryData } from "@core/lib/queryClient";
 import type { Character, WeeklyRaid } from "@core/types/character";
 import type { Friend } from "@core/types/friend";
 import type { WeekContentCategory } from "@core/types/lostark";
+import queryKeyGenerator from "@core/utils/queryKeyGenerator";
 
 import Modal from "@components/Modal";
 
@@ -25,6 +27,8 @@ interface Props {
 }
 
 const EditModal = ({ onClose, isOpen, character, friend }: Props) => {
+  const queryClient = useQueryClient();
+
   // 모달 내부 데이터
   const getAvailableRaids = useAvailableRaids(
     {

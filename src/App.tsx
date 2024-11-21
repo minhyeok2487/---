@@ -2,7 +2,7 @@ import { createTheme } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useMemo } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import styled, { ThemeProvider } from "styled-components";
@@ -19,10 +19,9 @@ import CommentsIndex from "@pages/comment/CommentsIndex";
 import CubeIndex from "@pages/cube/CubeIndex";
 import FriendTodo from "@pages/friend/FriendTodo";
 import FriendsIndex from "@pages/friend/FriendsIndex";
-import CommunityDetail from "@pages/main/CommunityDetail";
-import CommunityList from "@pages/main/CommunityList";
-import HomeIndex from "@pages/main/HomeIndex";
+import HomeIndex from "@pages/home/HomeIndex";
 import ApiKeyUpdateForm from "@pages/member/ApiKeyUpdateForm";
+import Community from "@pages/publish/Community";
 import Mypage from "@pages/publish/MyPage";
 import SampleComponentsPage from "@pages/publish/SampleComponentsPage";
 import CategoryBoard from "@pages/recruitingBoard/CategoryBoard";
@@ -48,6 +47,7 @@ import queryKeyGenerator from "@core/utils/queryKeyGenerator";
 
 import PageGuard from "@components/PageGuard";
 import ToastContainer from "@components/ToastContainer";
+import CommunityIndex from "@pages/community/CommunityIndex";
 
 const App = () => {
   const queryClient = useQueryClient();
@@ -153,24 +153,6 @@ const App = () => {
                 element={
                   <PageGuard>
                     <HomeIndex />
-                  </PageGuard>
-                }
-              />
-
-              <Route
-                path="/post"
-                element={
-                  <PageGuard>
-                    <CommunityList />
-                  </PageGuard>
-                }
-              />
-
-              <Route
-                path="/post/:communityId"
-                element={
-                  <PageGuard>
-                    <CommunityDetail />
                   </PageGuard>
                 }
               />
@@ -290,6 +272,14 @@ const App = () => {
                   </PageGuard>
                 }
               />
+              <Route
+                path="/community"
+                element={
+                  <PageGuard>
+                    <Community />
+                  </PageGuard>
+                }
+              />
 
               {/* 게시글(공지사항) 관련 */}
               <Route
@@ -330,6 +320,10 @@ const App = () => {
                     <ApiKeyUpdateForm />
                   </PageGuard>
                 }
+              />
+              <Route
+                path="/communityV2"
+                element={<CommunityIndex />}
               />
 
               {/* <Route

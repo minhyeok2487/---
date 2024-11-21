@@ -1,6 +1,7 @@
 import { IoNotificationsOutline } from "@react-icons/all-files/io5/IoNotificationsOutline";
 import { MdClose } from "@react-icons/all-files/md/MdClose";
 import { useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import { useState } from "react";
 import type { MouseEvent } from "react";
 import Highlighter from "react-highlight-words";
@@ -13,10 +14,40 @@ import useReadNotification from "@core/hooks/mutations/notification/useReadNotif
 import useNotifications from "@core/hooks/queries/notification/useNotifications";
 import useOutsideClick from "@core/hooks/useOutsideClick";
 import type { Notification } from "@core/types/notification";
-import { getTimeAgoString } from "@core/utils";
 import queryKeyGenerator from "@core/utils/queryKeyGenerator";
 
 import UserIcon from "@assets/images/user_icon.png";
+
+const getTimeAgoString = (fromDate: string) => {
+  const now = dayjs();
+
+  const monthsAgo = now.diff(dayjs(fromDate), "months");
+  if (monthsAgo >= 1) {
+    return `${monthsAgo}개월 전`;
+  }
+
+  const weeksAgo = now.diff(dayjs(fromDate), "weeks");
+  if (weeksAgo >= 1) {
+    return `${weeksAgo}주 전`;
+  }
+
+  const daysAgo = now.diff(dayjs(fromDate), "days");
+  if (daysAgo >= 1) {
+    return `${daysAgo}일 전`;
+  }
+
+  const hoursAgo = now.diff(dayjs(fromDate), "hours");
+  if (hoursAgo >= 1) {
+    return `${hoursAgo}시간 전`;
+  }
+
+  const minutesAgo = now.diff(dayjs(fromDate), "minutes");
+  if (minutesAgo >= 1) {
+    return `${minutesAgo}분 전`;
+  }
+
+  return `방금`;
+};
 
 const NotificationButton = () => {
   const queryClient = useQueryClient();
@@ -130,9 +161,6 @@ const NotificationButton = () => {
                       case "FRIEND":
                         navigate("/friends");
                         break;
-                      case "COMMUNITY":
-                        navigate(`/post/${item.data.communityId}`);
-                        break;
                       default:
                         break;
                     }
@@ -210,24 +238,6 @@ const NotificationButton = () => {
                                     <Highlighter
                                       highlightClassName="highlight"
                                       searchWords={["깐부요청", "깐부요청중"]}
-                                      textToHighlight={item.content}
-                                    />
-                                  </p>
-                                  <p className="created-at">
-                                    {getTimeAgoString(item.createdDate)}
-                                  </p>
-                                </DescriptionBox>
-                              </>
-                            );
-                          case "COMMUNITY":
-                            return (
-                              <>
-                                <ImageBox>💬</ImageBox>
-                                <DescriptionBox>
-                                  <p className="description">
-                                    <Highlighter
-                                      highlightClassName="highlight"
-                                      searchWords={["답글"]}
                                       textToHighlight={item.content}
                                     />
                                   </p>

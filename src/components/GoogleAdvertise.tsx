@@ -1,5 +1,4 @@
-import type { FC } from "react";
-import { useEffect } from "react";
+import { FC, useEffect } from "react";
 
 interface Props {
   client: string;
